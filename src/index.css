@@ -138,6 +138,38 @@ html, body, #root, * {
   }
 }
 
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fadeScaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes slideDownOut {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+/* Modal closing classes */
+.modal-backdrop.closing, .bottom-sheet-backdrop.closing {
+  animation: fadeOut var(--transition-fast) forwards;
+}
+.modal-content.closing {
+  animation: fadeScaleOut var(--transition-medium) forwards;
+}
+.bottom-sheet.closing {
+  animation: slideDownOut var(--transition-medium) forwards;
+}
+
 /* Custom CSS helper utilities */
 .ripple {
   position: relative;

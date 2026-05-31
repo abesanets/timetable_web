@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ToggleLeft, ToggleRight, Palette, Check } from 'lucide-react';
+import { useClosingModal } from '../../hooks/useClosingModal';
 import './SettingsScreen.css';
 
 interface SettingsScreenProps {
@@ -38,6 +39,11 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [showSubgroupModal, setShowSubgroupModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showProxyModal, setShowProxyModal] = useState(false);
+  
+  const { shouldRender: renderSubgroup, isClosing: closingSubgroup } = useClosingModal(showSubgroupModal, 300);
+  const { shouldRender: renderTheme, isClosing: closingTheme } = useClosingModal(showThemeModal, 300);
+  const { shouldRender: renderProxy, isClosing: closingProxy } = useClosingModal(showProxyModal, 300);
+
   const [customProxyInput, setCustomProxyInput] = useState(() => {
     const isPreset = 
       proxyTemplate === 'https://corsproxy.io/?url={url}' ||
@@ -180,9 +186,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       </div>
 
       {/* Subgroup Dialog */}
-      {showSubgroupModal && (
-        <div className="modal-backdrop" onClick={() => setShowSubgroupModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {renderSubgroup && (
+        <div className={`modal-backdrop ${closingSubgroup ? 'closing' : ''}`} onClick={() => setShowSubgroupModal(false)}>
+          <div className={`modal-content ${closingSubgroup ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <h3>Выберите подгруппу</h3>
             <div className="option-list">
               {[0, 1, 2].map((val) => (
@@ -198,9 +204,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       )}
 
       {/* Theme Dialog */}
-      {showThemeModal && (
-        <div className="modal-backdrop" onClick={() => setShowThemeModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {renderTheme && (
+        <div className={`modal-backdrop ${closingTheme ? 'closing' : ''}`} onClick={() => setShowThemeModal(false)}>
+          <div className={`modal-content ${closingTheme ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <h3>Тема оформления</h3>
             <div className="option-list">
               {(['auto', 'light', 'dark'] as const).map((val) => (
@@ -216,9 +222,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       )}
 
       {/* Proxy Dialog */}
-      {showProxyModal && (
-        <div className="modal-backdrop" onClick={() => setShowProxyModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {renderProxy && (
+        <div className={`modal-backdrop ${closingProxy ? 'closing' : ''}`} onClick={() => setShowProxyModal(false)}>
+          <div className={`modal-content ${closingProxy ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <h3>CORS-прокси сервер</h3>
             <p className="modal-description">Помогает обойти ограничения браузера при загрузке расписания.</p>
             <div className="option-list">

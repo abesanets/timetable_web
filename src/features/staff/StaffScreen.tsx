@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StaffData } from '../../data/staffData';
 import type { StaffMember } from '../../data/staffData';
 import { Search, ChevronRight, BookOpen, GraduationCap, Briefcase } from 'lucide-react';
+import { useClosingModal } from '../../hooks/useClosingModal';
 import './StaffScreen.css';
 
 interface StaffScreenProps {
@@ -23,6 +24,8 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({ onViewSchedule }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<'admin' | 'teachers' | 'employees'>('teachers');
   const [selectedMember, setSelectedMember] = useState<StaffMember | null>(null);
+  const [showMemberSheet, setShowMemberSheet] = useState(false);
+  const { shouldRender: renderMemberSheet, isClosing: closingMemberSheet } = useClosingModal(showMemberSheet, 300);
 
   // Group members into their category lists
   const members = 
@@ -67,7 +70,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({ onViewSchedule }) => {
           <button
             key={cat}
             className={`category-pill ${activeCategory === cat ? 'active' : ''}`}
-            onClick={() => { setActiveCategory(cat); setSelectedMember(null); }}
+            onClick={() => { setActiveCategory(cat); setShowMemberSheet(false); }}
           >
             {getCategoryTitle(cat)}
           </button>
@@ -81,7 +84,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({ onViewSchedule }) => {
             <div
               key={index}
               className="member-item-card"
-              onClick={() => setSelectedMember(member)}
+              onClick={() => { setSelectedMember(member); setShowMemberSheet(true); }}
             >
               <div className="member-avatar">
                 {member.fullName.charAt(0)}
@@ -101,9 +104,9 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({ onViewSchedule }) => {
       </div>
 
       {/* Detailed Sheet Modal */}
-      {selectedMember && (
-        <div className="modal-backdrop" onClick={() => setSelectedMember(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {renderMemberSheet && selectedMember && (
+        <div className={`modal-backdrop ${closingMemberSheet ? 'closing' : ''}`} onClick={() => setShowMemberSheet(false)}>
+          <div className={`modal-content ${closingMemberSheet ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="member-sheet-header">
               <div className="member-sheet-avatar">
                 {selectedMember.fullName.charAt(0)}
@@ -141,14 +144,14 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({ onViewSchedule }) => {
                   onClick={() => {
                     const shortName = toShortName(selectedMember.fullName);
                     onViewSchedule(shortName);
-                    setSelectedMember(null);
+                    setShowMemberSheet(false);
                   }}
                 >
                   <BookOpen size={18} />
                   <span>Посмотреть расписание</span>
                 </button>
               )}
-              <button className="close-sheet-btn" onClick={() => setSelectedMember(null)}>
+              <button className="close-sheet-btn" onClick={() => setShowMemberSheet(false)}>
                 Закрыть
               </button>
             </div>

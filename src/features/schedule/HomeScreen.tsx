@@ -8,6 +8,7 @@ import { ScheduleParser } from '../../utils/parser';
 import { toShortName } from '../staff/StaffScreen';
 import { findStaffByShortName, getRoomDescription } from '../../utils/staffUtils';
 import { filterScheduleBySubgroup, shouldShowAllSubgroupsInDetails, findTodayIndex, isShowingNextDay, extractDate, parseDate } from '../../utils/scheduleUtils';
+import { useClosingModal } from '../../hooks/useClosingModal';
 import './HomeScreen.css';
 
 interface HomeScreenProps {
@@ -40,6 +41,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [selectedStaffMember, setSelectedStaffMember] = useState<StaffMember | null>(null);
   const [sheetMode, setSheetMode] = useState<'lesson' | 'staff'>('lesson');
   const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const { shouldRender: renderBottomSheet, isClosing: closingBottomSheet } = useClosingModal(showBottomSheet, 300);
 
   // Refs for scrolling to today/next day card
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -390,9 +392,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* Bottom Sheet Drawer for Lesson & Staff details */}
-      {showBottomSheet && (
-        <div className="modal-backdrop" onClick={() => setShowBottomSheet(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {renderBottomSheet && (
+        <div className={`modal-backdrop ${closingBottomSheet ? 'closing' : ''}`} onClick={() => setShowBottomSheet(false)}>
+          <div className={`modal-content ${closingBottomSheet ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             {sheetMode === 'lesson' && selectedLesson && (
               <div className="lesson-details-sheet">
                 <h3>Детали занятия</h3>

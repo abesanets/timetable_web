@@ -28,12 +28,12 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, setActiveTab 
               className={`nav-item ${isActive ? 'active' : ''}`}
               onClick={() => setActiveTab(id)}
               aria-label={label}
+              title={label}
             >
               <div className="icon-wrapper">
                 <div className="pill-background" />
                 <Icon className="nav-icon" size={24} />
               </div>
-              <span className="nav-label">{label}</span>
             </button>
           );
         })}

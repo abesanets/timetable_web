@@ -10,6 +10,63 @@
     <!-- Preconnect Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Prevent FOUC (Flash of Unstyled Content) for Theme and Accent Colors -->
+    <script>
+      (function() {
+        try {
+          // 1. Apply Theme
+          var theme = localStorage.getItem('setting_theme') || 'auto';
+          var isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+
+          // 2. Apply Accent Color
+          var accentColor = localStorage.getItem('setting_accent_color') || 'default';
+          if (accentColor !== 'default') {
+            function hexToHsl(hex) {
+              var r = parseInt(hex.slice(1, 3), 16) / 255;
+              var g = parseInt(hex.slice(3, 5), 16) / 255;
+              var b = parseInt(hex.slice(5, 7), 16) / 255;
+              var max = Math.max(r, g, b), min = Math.min(r, g, b);
+              var h = 0, s = 0, l = (max + min) / 2;
+              if (max !== min) {
+                var d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                  case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                  case g: h = (b - r) / d + 2; break;
+                  case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+              }
+              return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+            }
+            var hsl = hexToHsl(accentColor);
+            var h = hsl.h, s = hsl.s, l = hsl.l;
+            
+            document.documentElement.style.setProperty('--primary-h', h.toString());
+            document.documentElement.style.setProperty('--primary-s', s + '%');
+            document.documentElement.style.setProperty('--primary-l', l + '%');
+
+            if (isDark) {
+              document.documentElement.style.setProperty('--primary', 'hsl(' + h + ', ' + s + '%, 80%)');
+              document.documentElement.style.setProperty('--on-primary', 'hsl(' + h + ', ' + s + '%, 15%)');
+              document.documentElement.style.setProperty('--primary-container', 'hsl(' + h + ', ' + s + '%, 25%)');
+              document.documentElement.style.setProperty('--on-primary-container', 'hsl(' + h + ', ' + s + '%, 90%)');
+              document.documentElement.style.setProperty('--secondary-container', 'hsl(' + h + ', ' + Math.max(10, s - 35) + '%, 22%)');
+              document.documentElement.style.setProperty('--on-secondary-container', 'hsl(' + h + ', ' + s + '%, 90%)');
+            } else {
+              document.documentElement.style.setProperty('--primary', 'hsl(' + h + ', ' + s + '%, 38%)');
+              document.documentElement.style.setProperty('--on-primary', '#ffffff');
+              document.documentElement.style.setProperty('--primary-container', 'hsl(' + h + ', ' + s + '%, 90%)');
+              document.documentElement.style.setProperty('--on-primary-container', 'hsl(' + h + ', ' + s + '%, 15%)');
+              document.documentElement.style.setProperty('--secondary-container', 'hsl(' + h + ', ' + Math.max(10, s - 30) + '%, 93%)');
+              document.documentElement.style.setProperty('--on-secondary-container', 'hsl(' + h + ', ' + s + '%, 15%)');
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
