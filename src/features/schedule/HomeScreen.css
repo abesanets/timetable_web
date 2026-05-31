@@ -2,7 +2,9 @@
   display: flex;
   gap: 8px;
   padding: 6px;
-  background-color: var(--surface-container-high);
+  background-color: color-mix(in srgb, var(--surface-container-high) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--outline-variant);
   border-radius: var(--shape-xl);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
@@ -181,25 +183,33 @@
   margin: 0 auto;
 }
 
-.day-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
+/* Mosaic layout — 3 vertical columns, cards create mosaic via height differences */
+.mosaic-layout {
+  display: flex;
+  gap: 16px;
   align-items: start;
 }
 
-@media (min-width: 600px) {
-  .day-list {
-    grid-template-columns: repeat(2, 1fr);
+.mosaic-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Mobile: dissolve columns, cards reorder by inline order into chronological list */
+@media (max-width: 959px) {
+  .mosaic-layout {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mosaic-column {
+    display: contents;
   }
 }
 
-@media (min-width: 960px) {
-  .day-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
+/* Day card base */
 .day-card {
   background-color: var(--surface-container-low);
   border-radius: var(--shape-l);
@@ -218,6 +228,7 @@
 [data-theme="dark"] .day-card.today {
   background-color: hsla(var(--primary-h), var(--primary-s), 20%, 0.3);
 }
+
 
 .day-card-header {
   display: flex;
@@ -297,8 +308,8 @@
 .room-pill {
   font-size: 11px;
   font-weight: 700;
-  color: var(--secondary);
-  background-color: hsla(210, 100%, 32%, 0.1);
+  color: var(--primary);
+  background-color: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.12);
   padding: 4px 10px;
   border-radius: var(--shape-xl);
   flex-shrink: 0;
@@ -331,6 +342,7 @@
 
 .sub-title {
   flex-grow: 1;
+  font-weight: 600;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -387,7 +399,7 @@
 }
 
 .details-scroll-content {
-  max-height: 320px;
+  max-height: 60vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

@@ -150,29 +150,34 @@
 
 /* Dialog Modals */
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   z-index: 200;
   animation: fadeIn var(--transition-fast);
+  padding: 16px;
 }
 
 .modal-content {
   background-color: var(--surface-container-low);
   width: 100%;
-  border-radius: var(--shape-l) var(--shape-l) 0 0;
-  padding: 24px 20px 32px;
+  max-width: 500px;
+  border-radius: var(--shape-l);
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  animation: slideUp var(--transition-medium);
-  border-top: 1px solid var(--outline-variant);
+  animation: fadeScale var(--transition-medium);
+  border: 1px solid var(--outline-variant);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .modal-content h3 {

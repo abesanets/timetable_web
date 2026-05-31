@@ -257,103 +257,128 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Timetable List Display */}
       <div className="timetable-view">
         {schedule ? (
-          <div className="day-list">
-            {schedule.days.map((day, index) => {
-              const isToday = index === todayIndex && !showingNext;
-              const isNext = index === todayIndex && showingNext;
+          <div className="mosaic-layout">
+            {(() => {
+              // Distribute days into 3 columns, with active day always in center column
+              const numCols = 3;
+              // Calculate offset so active day always lands in center column (index 1)
+              const colOffset = todayIndex >= 0
+                ? ((1 - (todayIndex % numCols)) + numCols) % numCols
+                : 0;
+              const columns: { day: typeof schedule.days[0]; globalIndex: number }[][] =
+                Array.from({ length: numCols }, () => []);
+              schedule.days.forEach((day, i) => {
+                const colIdx = (i + colOffset) % numCols;
+                columns[colIdx].push({ day, globalIndex: i });
+              });
 
-              let statusLabel = null;
-              if (isToday) {
-                statusLabel = 'Сегодня';
-              } else if (isNext) {
-                try {
-                  const dateStr = extractDate(day.dayDate);
-                  const dayDate = parseDate(dateStr);
-                  if (dayDate) {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
+              // Spine row index (which row within columns has the active day)
+              const spineRow = todayIndex >= 0 ? Math.floor(todayIndex / numCols) : -1;
 
-                    const target = new Date(dayDate.getTime());
-                    target.setHours(0, 0, 0, 0);
+              return columns.map((col, colIdx) => (
+                <div key={`col-${colIdx}`} className="mosaic-column">
+                  {col.map(({ day, globalIndex }, posInCol) => {
+                    const isToday = globalIndex === todayIndex && !showingNext;
+                    const isNext = globalIndex === todayIndex && showingNext;
 
-                    const diffInDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                    if (diffInDays === 1) {
-                      statusLabel = 'Завтра';
-                    } else if (diffInDays === 2) {
-                      statusLabel = 'Послезавтра';
-                    } else {
-                      statusLabel = 'Следующий';
+                    let statusLabel = null;
+                    if (isToday) {
+                      statusLabel = 'Сегодня';
+                    } else if (isNext) {
+                      try {
+                        const dateStr = extractDate(day.dayDate);
+                        const dayDate = parseDate(dateStr);
+                        if (dayDate) {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const target = new Date(dayDate.getTime());
+                          target.setHours(0, 0, 0, 0);
+                          const diffInDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                          if (diffInDays === 1) statusLabel = 'Завтра';
+                          else if (diffInDays === 2) statusLabel = 'Послезавтра';
+                          else statusLabel = 'Следующий';
+                        } else {
+                          statusLabel = 'Следующий';
+                        }
+                      } catch (e) {
+                        statusLabel = 'Следующий';
+                      }
                     }
-                  } else {
-                    statusLabel = 'Следующий';
-                  }
-                } catch (e) {
-                  statusLabel = 'Следующий';
-                }
-              }
 
-              const isHighlighted = isToday || isNext;
+                    const isHighlighted = isToday || isNext;
 
-              return (
-                <div
-                  key={day.dayDate}
-                  ref={(el) => { cardRefs.current[index] = el; }}
-                  className={`day-card ${isHighlighted ? 'today' : ''}`}
-                >
-                  <div className="day-card-header">
-                    <h3>{day.dayDate}</h3>
-                    {statusLabel && <span className="status-badge">{statusLabel}</span>}
-                  </div>
+                    // Determine card position relative to spine
+                    let cardPosition = '';
+                    if (spineRow >= 0) {
+                      if (posInCol < spineRow) cardPosition = 'past';
+                      else if (posInCol === spineRow) cardPosition = 'spine';
+                      else cardPosition = 'future';
+                    }
 
-                  <div className="lesson-list">
-                    {day.lessons.length > 0 ? (
-                      day.lessons.map((lesson) => {
-                        return (
-                          <div
-                            key={lesson.lessonNumber}
-                            className="lesson-card-item ripple"
-                            onClick={() => handleLessonCLick(day.dayDate, lesson)}
-                          >
-                            <div className="lesson-num-badge">
-                              {lesson.lessonNumber}
-                            </div>
-                            <div className="lesson-info">
-                              {lesson.subgroups.length === 1 ? (
-                                <>
-                                  <h4 className="lesson-title">
-                                    {lesson.subgroups[0].subject || '—'}
-                                  </h4>
-                                  {lesson.subgroups[0].room && (
-                                    <span className="room-pill">
-                                      {lesson.subgroups[0].room}
-                                    </span>
-                                  )}
-                                </>
-                              ) : (
-                                <div className="split-subgroups">
-                                  {lesson.subgroups.map((sg, index) => (
-                                    <React.Fragment key={index}>
-                                      <div className="subgroup-row">
-                                        <span className="sub-num">{sg.number}.</span>
-                                        <span className="sub-title">{sg.subject || '—'}</span>
-                                        {sg.room && <span className="room-pill mini">{sg.room}</span>}
+                    return (
+                      <div
+                        key={day.dayDate}
+                        ref={(el) => { cardRefs.current[globalIndex] = el; }}
+                        className={`day-card ${isHighlighted ? 'today' : ''} ${cardPosition ? `day-card--${cardPosition}` : ''}`}
+                        style={{ order: globalIndex }}
+                      >
+                        <div className="day-card-header">
+                          <h3>{day.dayDate}</h3>
+                          {statusLabel && <span className="status-badge">{statusLabel}</span>}
+                        </div>
+
+                        <div className="lesson-list">
+                          {day.lessons.length > 0 ? (
+                            day.lessons.map((lesson) => {
+                              return (
+                                <div
+                                  key={lesson.lessonNumber}
+                                  className="lesson-card-item ripple"
+                                  onClick={() => handleLessonCLick(day.dayDate, lesson)}
+                                >
+                                  <div className="lesson-num-badge">
+                                    {lesson.lessonNumber}
+                                  </div>
+                                  <div className="lesson-info">
+                                    {lesson.subgroups.length === 1 ? (
+                                      <>
+                                        <h4 className="lesson-title">
+                                          {lesson.subgroups[0].subject || '—'}
+                                        </h4>
+                                        {lesson.subgroups[0].room && (
+                                          <span className="room-pill">
+                                            {lesson.subgroups[0].room}
+                                          </span>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <div className="split-subgroups">
+                                        {lesson.subgroups.map((sg, sgIdx) => (
+                                          <React.Fragment key={sgIdx}>
+                                            <div className="subgroup-row">
+                                              <span className="sub-num">{sg.number}.</span>
+                                              <span className="sub-title">{sg.subject || '—'}</span>
+                                              {sg.room && <span className="room-pill mini">{sg.room}</span>}
+                                            </div>
+                                            {sgIdx < lesson.subgroups.length - 1 && <hr className="divider" />}
+                                          </React.Fragment>
+                                        ))}
                                       </div>
-                                      {index < lesson.subgroups.length - 1 && <hr className="divider" />}
-                                    </React.Fragment>
-                                  ))}
+                                    )}
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <p className="no-lessons">Нет занятий</p>
-                    )}
-                  </div>
+                              );
+                            })
+                          ) : (
+                            <p className="no-lessons">Нет занятий</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              ));
+            })()}
           </div>
         ) : (
           <div className="empty-state">
