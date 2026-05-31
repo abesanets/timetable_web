@@ -38,6 +38,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [showSubgroupModal, setShowSubgroupModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showProxyModal, setShowProxyModal] = useState(false);
+  const [customProxyInput, setCustomProxyInput] = useState(() => {
+    const isPreset = 
+      proxyTemplate === 'https://corsproxy.io/?url={url}' ||
+      proxyTemplate === 'https://api.allorigins.win/raw?url={url}' ||
+      proxyTemplate === '{url}';
+    if (isPreset) return '';
+    
+    let host = proxyTemplate.trim();
+    if (host.startsWith('https://')) host = host.slice(8);
+    else if (host.startsWith('http://')) host = host.slice(7);
+    if (host.includes('/?url=')) host = host.split('/?url=')[0];
+    else if (host.includes('?url=')) host = host.split('?url=')[0];
+    else if (host.endsWith('/')) host = host.slice(0, -1);
+    return host;
+  });
 
   const getSubgroupLabel = (val: number) => {
     if (val === 0) return 'Все подгруппы';
@@ -54,7 +69,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     if (val.includes('corsproxy.io')) return 'CORSProxy.io (По умолчанию)';
     if (val.includes('allorigins')) return 'AllOrigins (Резервный)';
     if (val === '{url}') return 'Прямое подключение (Без прокси)';
-    return 'Свой прокси (Cloudflare)';
+    
+    let host = val.trim();
+    if (host.startsWith('https://')) host = host.slice(8);
+    else if (host.startsWith('http://')) host = host.slice(7);
+    if (host.includes('/?url=')) host = host.split('/?url=')[0];
+    else if (host.includes('?url=')) host = host.split('?url=')[0];
+    else if (host.endsWith('/')) host = host.slice(0, -1);
+    
+    return `Свой прокси (${host})`;
   };
 
   const handleSubgroupChange = (val: number) => {
@@ -204,21 +227,33 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 { label: 'AllOrigins (Альтернативный)', value: 'https://api.allorigins.win/raw?url={url}' },
                 { label: 'Прямой запрос (Без прокси)', value: '{url}' }
               ].map((item) => (
-                <label key={item.value} className="option-item" onClick={() => { setProxyTemplate(item.value); setShowProxyModal(false); }}>
+                <label
+                  key={item.value}
+                  className="option-item"
+                  onClick={() => {
+                    setProxyTemplate(item.value);
+                    setCustomProxyInput('');
+                    setShowProxyModal(false);
+                  }}
+                >
                   <input type="radio" checked={proxyTemplate === item.value} readOnly />
                   <span>{item.label}</span>
                 </label>
               ))}
             </div>
             <div className="custom-proxy-input-wrapper">
-              <label>Свой прокси (Cloudflare Workers, etc.):</label>
+              <label>Свой прокси (домен или адрес):</label>
               <input
                 type="text"
-                placeholder="https://my-worker.username.workers.dev/?url={url}"
-                value={proxyTemplate.startsWith('http') && !proxyTemplate.includes('corsproxy.io') && !proxyTemplate.includes('allorigins') ? proxyTemplate : ''}
-                onChange={(e) => setProxyTemplate(e.target.value)}
+                placeholder="my-worker.username.workers.dev"
+                value={customProxyInput}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setCustomProxyInput(val);
+                  setProxyTemplate(val);
+                }}
               />
-              <span className="proxy-hint">Обязательно добавьте {'{url}'} в конец шаблона.</span>
+              <span className="proxy-hint">Введите только адрес домена. Префикс https:// и параметр ?url= добавятся автоматически.</span>
             </div>
             <button className="modal-close" onClick={() => setShowProxyModal(false)}>Готово</button>
           </div>

@@ -36,7 +36,27 @@ export function getProxyUrl(targetUrl: string, proxyTemplate: string): string {
   if (!proxyTemplate) {
     return targetUrl;
   }
-  return proxyTemplate.replace('{url}', encodeURIComponent(targetUrl));
+  
+  if (proxyTemplate.includes('{url}')) {
+    return proxyTemplate.replace('{url}', encodeURIComponent(targetUrl));
+  }
+
+  // Treat as custom host domain
+  let host = proxyTemplate.trim();
+  if (host.startsWith('https://')) {
+    host = host.slice(8);
+  } else if (host.startsWith('http://')) {
+    host = host.slice(7);
+  }
+  if (host.includes('/?url=')) {
+    host = host.split('/?url=')[0];
+  } else if (host.includes('?url=')) {
+    host = host.split('?url=')[0];
+  } else if (host.endsWith('/')) {
+    host = host.slice(0, -1);
+  }
+
+  return `https://${host}/?url=${encodeURIComponent(targetUrl)}`;
 }
 
 export async function fetchScheduleHtml(group: string, proxyTemplate: string): Promise<string> {
