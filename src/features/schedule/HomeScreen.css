@@ -10,17 +10,29 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   position: fixed;
   top: 16px;
-  left: 16px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
   z-index: 99;
   align-items: center;
 }
 
-@media (min-width: 600px) {
-  .search-bar {
-    width: 340px;
-    right: auto;
-  }
+.vignette-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 0%, transparent) 25%,
+    color-mix(in srgb, var(--background) 0%, transparent) 75%,
+    var(--background) 100%
+  );
+  z-index: 50; /* Above schedule, below search bar and nav */
 }
 
 .search-input-box {
@@ -486,4 +498,22 @@
 
 .back-btn:hover {
   opacity: 0.8;
+}
+
+/* Modal close buttons */
+.modal-close, .close-sheet-btn {
+  align-self: flex-end;
+  padding: 10px 24px;
+  border-radius: var(--shape-xl);
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+  margin-top: 16px;
+}
+
+.modal-close:hover, .close-sheet-btn:hover {
+  opacity: 0.9;
 }

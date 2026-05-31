@@ -186,6 +186,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="home-screen scrollable-content">
+      <div className="vignette-overlay"></div>
 
       {/* Search Input bar */}
       <div className="search-bar">

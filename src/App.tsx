@@ -113,7 +113,9 @@ export const App: React.FC = () => {
         document.documentElement.style.removeProperty('--primary-s');
         document.documentElement.style.removeProperty('--primary-l');
         document.documentElement.style.removeProperty('--primary');
+        document.documentElement.style.removeProperty('--on-primary');
         document.documentElement.style.removeProperty('--primary-container');
+        document.documentElement.style.removeProperty('--on-primary-container');
         document.documentElement.style.removeProperty('--secondary-container');
         document.documentElement.style.removeProperty('--on-secondary-container');
       } else {
@@ -124,12 +126,16 @@ export const App: React.FC = () => {
 
         if (isDark) {
           document.documentElement.style.setProperty('--primary', `hsl(${h}, ${s}%, 80%)`);
+          document.documentElement.style.setProperty('--on-primary', `hsl(${h}, ${s}%, 15%)`);
           document.documentElement.style.setProperty('--primary-container', `hsl(${h}, ${s}%, 25%)`);
+          document.documentElement.style.setProperty('--on-primary-container', `hsl(${h}, ${s}%, 90%)`);
           document.documentElement.style.setProperty('--secondary-container', `hsl(${h}, ${Math.max(10, s - 35)}%, 22%)`);
           document.documentElement.style.setProperty('--on-secondary-container', `hsl(${h}, ${s}%, 90%)`);
         } else {
           document.documentElement.style.setProperty('--primary', `hsl(${h}, ${s}%, 38%)`);
+          document.documentElement.style.setProperty('--on-primary', `#ffffff`);
           document.documentElement.style.setProperty('--primary-container', `hsl(${h}, ${s}%, 90%)`);
+          document.documentElement.style.setProperty('--on-primary-container', `hsl(${h}, ${s}%, 15%)`);
           document.documentElement.style.setProperty('--secondary-container', `hsl(${h}, ${Math.max(10, s - 30)}%, 93%)`);
           document.documentElement.style.setProperty('--on-secondary-container', `hsl(${h}, ${s}%, 15%)`);
         }

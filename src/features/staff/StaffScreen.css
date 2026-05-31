@@ -253,15 +253,15 @@
   width: 100%;
   padding: 12px;
   border-radius: var(--shape-xl);
-  background-color: transparent;
-  color: var(--primary);
-  border: 1px solid var(--outline-variant);
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border: none;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: opacity var(--transition-fast);
 }
 
 .close-sheet-btn:hover {
-  background-color: var(--surface-container);
+  opacity: 0.9;
 }
