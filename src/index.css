@@ -94,20 +94,13 @@ html, body, #root {
   user-select: none;
 }
 
-/* Scrollbar styles */
+/* Hide scrollbar globally */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--outline-variant);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--outline);
+html, body, #root, * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 /* Animations */
@@ -177,28 +170,18 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
   position: relative;
-  box-shadow: 0 0 40px rgba(0,0,0,0.03);
   background-color: var(--background);
-  border-left: 1px solid var(--outline-variant);
-  border-right: 1px solid var(--outline-variant);
-}
-
-@media (max-width: 600px) {
-  .app-layout {
-    border-left: none;
-    border-right: none;
-    box-shadow: none;
-  }
 }
 
 /* Global scroll container */
 .scrollable-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 90px; /* offset for bottom navigation bar */
+  padding-bottom: 110px; /* offset for floating bottom dock bar */
 }
 
 /* Skeleton loader animations */

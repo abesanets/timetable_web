@@ -186,9 +186,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="home-screen scrollable-content">
-      <div className="screen-header">
-        <h1>Расписание</h1>
-      </div>
 
       {/* Search Input bar */}
       <div className="search-bar">

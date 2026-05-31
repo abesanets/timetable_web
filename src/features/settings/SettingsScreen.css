@@ -1,8 +1,13 @@
+.settings-screen {
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
 .screen-header {
   padding: 24px 16px 8px;
-  background-color: var(--surface);
-  position: sticky;
-  top: 0;
+  background-color: transparent;
+  position: relative;
   z-index: 10;
 }
 

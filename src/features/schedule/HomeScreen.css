@@ -1,11 +1,24 @@
 .search-bar {
   display: flex;
-  gap: 12px;
-  padding: 16px;
-  background-color: var(--surface);
-  position: sticky;
-  top: 68px;
-  z-index: 9;
+  gap: 8px;
+  padding: 6px;
+  background-color: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--shape-xl);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 99;
+  align-items: center;
+}
+
+@media (min-width: 600px) {
+  .search-bar {
+    width: 340px;
+    right: auto;
+  }
 }
 
 .search-input-box {
@@ -19,8 +32,8 @@
   background-color: var(--surface-container-low);
   border: 1px solid var(--outline-variant);
   border-radius: var(--shape-xl);
-  padding: 0 16px;
-  height: 56px;
+  padding: 0 12px;
+  height: 44px;
   transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
@@ -54,7 +67,7 @@
 /* Autocomplete suggestions dropdown */
 .suggestions-menu {
   position: absolute;
-  top: 62px;
+  top: 52px;
   left: 0;
   right: 0;
   background-color: var(--surface-container-low);
@@ -80,8 +93,8 @@
 
 /* Submit search button */
 .search-submit-btn {
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background-color: var(--secondary-container);
   color: var(--on-secondary-container);
@@ -160,15 +173,31 @@
 
 /* Timetable view list */
 .timetable-view {
-  padding: 0 16px 24px;
+  padding: 88px 16px 110px;
   display: flex;
   flex-direction: column;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .day-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 600px) {
+  .day-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .day-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .day-card {

@@ -1,8 +1,13 @@
+.staff-screen {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
 .search-bar-container {
   padding: 12px 16px;
-  background-color: var(--surface);
-  position: sticky;
-  top: 68px;
+  background-color: transparent;
+  position: relative;
   z-index: 9;
 }
 
@@ -63,9 +68,21 @@
 
 .members-list {
   padding: 0 16px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .members-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .members-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .member-item-card {
