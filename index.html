@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="theme-color" content="#0061a4" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="Удобное расписание занятий Минского государственного колледжа цифровых технологий в веб-формате. Быстрый поиск групп, преподавателей, звонков и настройка тем." />
     <title>Расписание МГКЦТ — Веб-версия</title>
@@ -60,9 +62,30 @@
               document.documentElement.style.setProperty('--on-primary', '#ffffff');
               document.documentElement.style.setProperty('--primary-container', 'hsl(' + h + ', ' + s + '%, 90%)');
               document.documentElement.style.setProperty('--on-primary-container', 'hsl(' + h + ', ' + s + '%, 15%)');
-              document.documentElement.style.setProperty('--secondary-container', 'hsl(' + h + ', ' + Math.max(10, s - 30) + '%, 93%)');
               document.documentElement.style.setProperty('--on-secondary-container', 'hsl(' + h + ', ' + s + '%, 15%)');
             }
+
+            // 3. Update Favicon & Meta Theme on initial load
+            try {
+              var c1 = 'hsl(' + h + ', ' + Math.min(100, s + 10) + '%, ' + Math.min(75, l + 12) + '%)';
+              var c2 = 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+              var c3 = 'hsl(' + h + ', ' + Math.min(100, s + 15) + '%, ' + Math.max(15, l - 22) + '%)';
+              var cb1 = 'hsl(' + h + ', ' + Math.min(100, s + 10) + '%, ' + Math.min(80, l + 20) + '%)';
+              var cb2 = 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
+              var b1 = 'hsl(' + h + ', ' + s + '%, ' + Math.min(65, l + 8) + '%)';
+              var b2 = 'hsl(' + ((h + 15) % 360) + ', ' + s + '%, ' + l + '%)';
+              var b3 = 'hsl(' + ((h + 30) % 360) + ', ' + s + '%, ' + Math.max(25, l - 10) + '%)';
+
+              var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%"><defs><linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="50%" stop-color="' + c2 + '"/><stop offset="100%" stop-color="' + c3 + '"/></linearGradient><linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/></linearGradient><linearGradient id="clockGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="' + cb1 + '"/><stop offset="100%" stop-color="' + cb2 + '"/></linearGradient><filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%"><feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.25"/></filter><filter id="badgeShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/></filter></defs><rect width="512" height="512" rx="128" fill="url(#bgGrad)"/><rect x="4" y="4" width="504" height="504" rx="124" fill="none" stroke="#ffffff" stroke-width="4" stroke-opacity="0.2"/><g filter="url(#dropShadow)"><rect x="76" y="86" width="360" height="350" rx="44" fill="#ffffff"/><path d="M 76 130 Q 76 86 120 86 L 392 86 Q 436 86 436 130 L 436 176 L 76 176 Z" fill="url(#headerGrad)"/></g><rect x="156" y="58" width="32" height="58" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="6"/><rect x="324" y="58" width="32" height="58" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="6"/><circle cx="216" cy="131" r="6" fill="#ffffff" fill-opacity="0.6"/><circle cx="256" cy="131" r="6" fill="#ffffff" fill-opacity="0.9"/><circle cx="296" cy="131" r="6" fill="#ffffff" fill-opacity="0.6"/><rect x="116" y="214" width="76" height="32" rx="16" fill="' + b1 + '"/><rect x="206" y="214" width="186" height="32" rx="16" fill="#e2e8f0"/><rect x="116" y="268" width="76" height="32" rx="16" fill="' + b2 + '"/><rect x="206" y="268" width="140" height="32" rx="16" fill="#e2e8f0"/><rect x="116" y="322" width="76" height="32" rx="16" fill="' + b3 + '"/><rect x="206" y="322" width="110" height="32" rx="16" fill="#e2e8f0"/><g filter="url(#badgeShadow)"><circle cx="380" cy="374" r="68" fill="#ffffff"/><circle cx="380" cy="374" r="56" fill="url(#clockGrad)"/><path d="M 380 374 L 380 342" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/><path d="M 380 374 L 404 360" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/><circle cx="380" cy="374" r="6" fill="#ffffff"/></g></svg>';
+              var dataUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+
+              var fLink = document.querySelector('link[rel="icon"]');
+              if (fLink) fLink.href = dataUrl;
+              var aLink = document.querySelector('link[rel="apple-touch-icon"]');
+              if (aLink) aLink.href = dataUrl;
+              var mTheme = document.querySelector('meta[name="theme-color"]');
+              if (mTheme) mTheme.content = accentColor;
+            } catch (err) {}
           }
         } catch (e) {}
       })();

@@ -5,39 +5,7 @@ import { HomeScreen } from './features/schedule/HomeScreen';
 import { AlarmsScreen } from './features/alarms/AlarmsScreen';
 import { StaffScreen } from './features/staff/StaffScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
-
-function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  let r = parseInt(hex.slice(1, 3), 16) / 255;
-  let g = parseInt(hex.slice(3, 5), 16) / 255;
-  let b = parseInt(hex.slice(5, 7), 16) / 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-    }
-    h /= 6;
-  }
-  return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100)
-  };
-}
+import { updateFavicon, hexToHsl } from './utils/favicon';
 
 export const App: React.FC = () => {
   // Load settings from localStorage
@@ -56,7 +24,11 @@ export const App: React.FC = () => {
     return localStorage.getItem('setting_accent_color') || 'default';
   });
   const [proxyTemplate, setProxyTemplate] = useState<string>(() => {
-    return localStorage.getItem('setting_proxy_template') || 'https://corsproxy.io/?url={url}';
+    const saved = localStorage.getItem('setting_proxy_template');
+    if (!saved || saved === 'https://corsproxy.io/?url={url}') {
+      return 'https://timetable-proxy.a-besanets.workers.dev/?url={url}';
+    }
+    return saved;
   });
 
   // Persist settings
@@ -140,6 +112,9 @@ export const App: React.FC = () => {
           document.documentElement.style.setProperty('--on-secondary-container', `hsl(${h}, ${s}%, 15%)`);
         }
       }
+
+      // Update favicon and theme color to match accent
+      updateFavicon(accentColor);
     };
 
     // Apply color accent

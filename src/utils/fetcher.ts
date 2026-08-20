@@ -26,10 +26,13 @@ export class ServerErrorException extends Error {
   }
 }
 
+export const DEFAULT_PROXY_URL = 'https://timetable-proxy.a-besanets.workers.dev/?url={url}';
+
 export const DEFAULT_PROXIES = [
-  { name: 'CORSProxy.io', template: 'https://corsproxy.io/?url={url}' },
-  { name: 'AllOrigins (Raw)', template: 'https://api.allorigins.win/raw?url={url}' },
-  { name: 'Direct (No Proxy)', template: '{url}' }
+  { name: 'Cloudflare Worker (Основной)', template: 'https://timetable-proxy.a-besanets.workers.dev/?url={url}' },
+  { name: 'CORSProxy.io (Резервный)', template: 'https://corsproxy.io/?url={url}' },
+  { name: 'AllOrigins (Резервный)', template: 'https://api.allorigins.win/raw?url={url}' },
+  { name: 'Прямой запрос (Без прокси)', template: '{url}' }
 ];
 
 export function getProxyUrl(targetUrl: string, proxyTemplate: string): string {

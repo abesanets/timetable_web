@@ -46,6 +46,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
   const [customProxyInput, setCustomProxyInput] = useState(() => {
     const isPreset = 
+      proxyTemplate === 'https://timetable-proxy.a-besanets.workers.dev/?url={url}' ||
       proxyTemplate === 'https://corsproxy.io/?url={url}' ||
       proxyTemplate === 'https://api.allorigins.win/raw?url={url}' ||
       proxyTemplate === '{url}';
@@ -72,7 +73,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   const getProxyLabel = (val: string) => {
-    if (val.includes('corsproxy.io')) return 'CORSProxy.io (По умолчанию)';
+    if (val.includes('timetable-proxy.a-besanets.workers.dev')) return 'Cloudflare Worker (По умолчанию)';
+    if (val.includes('corsproxy.io')) return 'CORSProxy.io (Резервный)';
     if (val.includes('allorigins')) return 'AllOrigins (Резервный)';
     if (val === '{url}') return 'Прямое подключение (Без прокси)';
     
@@ -229,8 +231,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <p className="modal-description">Помогает обойти ограничения браузера при загрузке расписания.</p>
             <div className="option-list">
               {[
-                { label: 'CORSProxy.io (Рекомендуется)', value: 'https://corsproxy.io/?url={url}' },
-                { label: 'AllOrigins (Альтернативный)', value: 'https://api.allorigins.win/raw?url={url}' },
+                { label: 'Cloudflare Worker (Основной)', value: 'https://timetable-proxy.a-besanets.workers.dev/?url={url}' },
+                { label: 'CORSProxy.io (Резервный)', value: 'https://corsproxy.io/?url={url}' },
+                { label: 'AllOrigins (Резервный)', value: 'https://api.allorigins.win/raw?url={url}' },
                 { label: 'Прямой запрос (Без прокси)', value: '{url}' }
               ].map((item) => (
                 <label
