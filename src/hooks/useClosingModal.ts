@@ -4,19 +4,25 @@ export function useClosingModal(isOpen: boolean, duration: number = 300) {
   const [shouldRender, setRender] = useState(isOpen);
   const [isClosing, setIsClosing] = useState(false);
 
+  if (isOpen && !shouldRender) {
+    setRender(true);
+    setIsClosing(false);
+  }
+
   useEffect(() => {
-    let timeoutId: number;
-    if (isOpen) {
-      setRender(true);
-      setIsClosing(false);
-    } else if (shouldRender) {
-      setIsClosing(true);
-      timeoutId = window.setTimeout(() => {
+    if (!isOpen && shouldRender) {
+      const timer = window.setTimeout(() => {
+        setIsClosing(true);
+      }, 0);
+      const closeTimer = window.setTimeout(() => {
         setRender(false);
         setIsClosing(false);
       }, duration);
+      return () => {
+        window.clearTimeout(timer);
+        window.clearTimeout(closeTimer);
+      };
     }
-    return () => window.clearTimeout(timeoutId);
   }, [isOpen, shouldRender, duration]);
 
   return { shouldRender, isClosing };

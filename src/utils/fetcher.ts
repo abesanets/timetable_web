@@ -89,7 +89,7 @@ export async function fetchScheduleHtml(group: string, proxyTemplate: string): P
     }
 
     return html;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof GroupNotFoundException || error instanceof ServerErrorException) {
       throw error;
     }
@@ -124,7 +124,7 @@ export async function fetchTeacherScheduleHtml(teacherName: string, proxyTemplat
     }
 
     return html;
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof TeacherNotFoundException || error instanceof ServerErrorException) {
       throw error;
     }

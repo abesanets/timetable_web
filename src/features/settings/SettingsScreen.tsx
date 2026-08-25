@@ -12,11 +12,13 @@ interface SettingsScreenProps {
   setTheme: (val: 'auto' | 'light' | 'dark') => void;
   accentColor: string; // 'default' | hex code
   setAccentColor: (val: string) => void;
+  autoRefresh: boolean;
+  setAutoRefresh: (val: boolean) => void;
   proxyTemplate: string;
   setProxyTemplate: (val: string) => void;
 }
 
-export const PRESET_ACCENTS = [
+const PRESET_ACCENTS = [
   { name: 'Синий (дефолт)', value: 'default', color: '#0061a4' },
   { name: 'Зеленый', value: '#2e7d32', color: '#2e7d32' },
   { name: 'Фиолетовый', value: '#6a1b9a', color: '#6a1b9a' },
@@ -33,6 +35,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   setTheme,
   accentColor,
   setAccentColor,
+  autoRefresh,
+  setAutoRefresh,
   proxyTemplate,
   setProxyTemplate
 }) => {
@@ -178,6 +182,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         {/* Network / Proxy */}
         <section className="settings-section">
           <h2>Сеть и соединение</h2>
+          <div
+            className="settings-card"
+            onClick={() => setAutoRefresh(!autoRefresh)}
+          >
+            <div className="card-info">
+              <h3>Автообновление при входе</h3>
+              <p>Автоматически загружать свежее расписание при открытии сайта</p>
+            </div>
+            <div className="card-action">
+              {autoRefresh ? (
+                <ToggleRight className="toggle-icon active" size={40} />
+              ) : (
+                <ToggleLeft className="toggle-icon" size={40} />
+              )}
+            </div>
+          </div>
+
           <div className="settings-card" onClick={() => setShowProxyModal(true)}>
             <div className="card-info">
               <h3>CORS прокси-сервер</h3>

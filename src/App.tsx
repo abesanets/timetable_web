@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Navigation } from './components/Navigation';
 import type { TabRoute } from './components/Navigation';
 import { HomeScreen } from './features/schedule/HomeScreen';
 import { AlarmsScreen } from './features/alarms/AlarmsScreen';
 import { StaffScreen } from './features/staff/StaffScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
+import type { Schedule } from './data/models';
+import { fetchScheduleHtml, fetchTeacherScheduleHtml } from './utils/fetcher';
+import { ScheduleParser } from './utils/parser';
 import { updateFavicon, hexToHsl } from './utils/favicon';
 import { getBuildingForGroup } from './utils/buildingUtils';
 
 export const App: React.FC = () => {
   // Load settings from localStorage
   const [activeTab, setActiveTab] = useState<TabRoute>('home');
-  const [groupInput, setGroupInput] = useState('');
+  const [groupInput, setGroupInput] = useState<string>(() => {
+    return localStorage.getItem('last_schedule_query') || '';
+  });
   const [subgroup, setSubgroup] = useState<number>(() => {
     return Number(localStorage.getItem('setting_subgroup') || '0');
   });
@@ -24,6 +29,9 @@ export const App: React.FC = () => {
   const [accentColor, setAccentColor] = useState<string>(() => {
     return localStorage.getItem('setting_accent_color') || 'default';
   });
+  const [autoRefresh, setAutoRefresh] = useState<boolean>(() => {
+    return localStorage.getItem('setting_auto_refresh') !== 'false';
+  });
   const [proxyTemplate, setProxyTemplate] = useState<string>(() => {
     const saved = localStorage.getItem('setting_proxy_template');
     if (!saved || saved === 'https://corsproxy.io/?url={url}') {
@@ -31,6 +39,28 @@ export const App: React.FC = () => {
     }
     return saved;
   });
+
+  // Schedule state lifted to root level
+  const [fullSchedule, setFullSchedule] = useState<Schedule | null>(() => {
+    const cachedData = localStorage.getItem('cached_schedule_data');
+    if (cachedData) {
+      try {
+        return JSON.parse(cachedData) as Schedule;
+      } catch (e) {
+        console.error('Failed to parse cached schedule', e);
+      }
+    }
+    return null;
+  });
+  const [loadedGroup, setLoadedGroup] = useState<string | null>(() => {
+    return localStorage.getItem('last_schedule_query') || null;
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    const lastQuery = localStorage.getItem('last_schedule_query');
+    const autoRefreshEnabled = localStorage.getItem('setting_auto_refresh') !== 'false';
+    return Boolean(autoRefreshEnabled && lastQuery && lastQuery.trim());
+  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Persist settings
   useEffect(() => {
@@ -50,19 +80,92 @@ export const App: React.FC = () => {
   }, [accentColor]);
 
   useEffect(() => {
+    localStorage.setItem('setting_auto_refresh', autoRefresh.toString());
+  }, [autoRefresh]);
+
+  useEffect(() => {
     localStorage.setItem('setting_proxy_template', proxyTemplate);
   }, [proxyTemplate]);
+
+  // Load schedule function
+  const loadSchedule = useCallback(async (targetQuery?: string) => {
+    const query = (targetQuery || '').trim();
+    if (!query) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+    const startTime = Date.now();
+
+    try {
+      const parser = new ScheduleParser();
+      let rawHtml = '';
+      let parsedSchedule: Schedule;
+
+      // Check if it's a teacher search or group (if query doesn't contain digits, treat as teacher)
+      const isTeacher = !/\d/.test(query);
+
+      if (isTeacher) {
+        rawHtml = await fetchTeacherScheduleHtml(query, proxyTemplate);
+        parsedSchedule = parser.parseTeacherSchedule(rawHtml, query);
+      } else {
+        rawHtml = await fetchScheduleHtml(query, proxyTemplate);
+        parsedSchedule = parser.parse(rawHtml, query);
+      }
+
+      setFullSchedule(parsedSchedule);
+      setLoadedGroup(query);
+      setGroupInput(query);
+      setErrorMessage(null);
+
+      // Save to localStorage
+      localStorage.setItem('last_schedule_query', query);
+      localStorage.setItem('cached_schedule_data', JSON.stringify(parsedSchedule));
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : 'Произошла непредвиденная ошибка';
+      setErrorMessage(msg);
+    } finally {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 350) {
+        await new Promise(resolve => setTimeout(resolve, 350 - elapsed));
+      }
+      setIsLoading(false);
+    }
+  }, [proxyTemplate]);
+
+  // Auto-refresh schedule once on app mount if last query exists
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchOnMount = async () => {
+      await Promise.resolve();
+      if (ignore) return;
+
+      const lastQuery = localStorage.getItem('last_schedule_query');
+      const autoRefreshEnabled = localStorage.getItem('setting_auto_refresh') !== 'false';
+      if (autoRefreshEnabled && lastQuery && lastQuery.trim()) {
+        await loadSchedule(lastQuery.trim());
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchOnMount();
+
+    return () => {
+      ignore = true;
+    };
+  }, [loadSchedule]);
 
   // Handle dark/light theme switching
   useEffect(() => {
     const handleThemeChange = () => {
-      let activeTheme: 'light' | 'dark' = 'light';
-      if (theme === 'auto') {
-        const isDarkSystem = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        activeTheme = isDarkSystem ? 'dark' : 'light';
-      } else {
-        activeTheme = theme;
-      }
+      const activeTheme: 'light' | 'dark' = theme === 'auto'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : theme;
       document.documentElement.setAttribute('data-theme', activeTheme);
     };
 
@@ -132,11 +235,7 @@ export const App: React.FC = () => {
   const handleViewScheduleFromStaff = (teacherShortName: string) => {
     setGroupInput(teacherShortName);
     setActiveTab('home');
-    // We add a tiny delay to ensure the DOM is updated and search is triggered
-    setTimeout(() => {
-      const searchBtn = document.querySelector('.search-submit-btn') as HTMLButtonElement;
-      if (searchBtn) searchBtn.click();
-    }, 100);
+    loadSchedule(teacherShortName);
   };
 
   const renderActiveTab = () => {
@@ -146,9 +245,15 @@ export const App: React.FC = () => {
           <HomeScreen
             groupInput={groupInput}
             setGroupInput={setGroupInput}
+            fullSchedule={fullSchedule}
+            setFullSchedule={setFullSchedule}
+            loadedGroup={loadedGroup}
+            isLoading={isLoading}
+            errorMessage={errorMessage}
+            setErrorMessage={setErrorMessage}
+            loadSchedule={loadSchedule}
             selectedSubgroup={subgroup}
             showOtherSubgroup={showOtherSubgroup}
-            proxyTemplate={proxyTemplate}
           />
         );
       case 'alarms':
@@ -166,6 +271,8 @@ export const App: React.FC = () => {
             setTheme={setTheme}
             accentColor={accentColor}
             setAccentColor={setAccentColor}
+            autoRefresh={autoRefresh}
+            setAutoRefresh={setAutoRefresh}
             proxyTemplate={proxyTemplate}
             setProxyTemplate={setProxyTemplate}
           />

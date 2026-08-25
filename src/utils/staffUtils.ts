@@ -1,6 +1,17 @@
 import { StaffData } from '../data/staffData';
 import type { StaffMember } from '../data/staffData';
 
+export function toShortName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 3) return fullName;
+
+  const lastName = parts[0];
+  const firstName = parts[1];
+  const middleName = parts[2];
+
+  return `${lastName} ${firstName.charAt(0)}. ${middleName.charAt(0)}.`;
+}
+
 export function getRoomDescription(room: string): string {
   const trimmedRoom = room.trim();
 

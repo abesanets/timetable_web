@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, RefreshCw, X, AlertTriangle, Info, MapPin, User, ChevronLeft, Clock } from 'lucide-react';
 import type { Schedule, Lesson } from '../../data/models';
 import { StaffData } from '../../data/staffData';
 import type { StaffMember } from '../../data/staffData';
-import { fetchScheduleHtml, fetchTeacherScheduleHtml } from '../../utils/fetcher';
-import { ScheduleParser } from '../../utils/parser';
-import { toShortName } from '../staff/StaffScreen';
-import { findStaffByShortName, getRoomDescription } from '../../utils/staffUtils';
+import { findStaffByShortName, getRoomDescription, toShortName } from '../../utils/staffUtils';
 import { filterScheduleBySubgroup, shouldShowAllSubgroupsInDetails, findTodayIndex, isShowingNextDay, extractDate, parseDate } from '../../utils/scheduleUtils';
 import { getBuildingForGroup, getCallTime, formatCallTimeInterval } from '../../utils/buildingUtils';
 import { useClosingModal } from '../../hooks/useClosingModal';
@@ -15,23 +12,32 @@ import './HomeScreen.css';
 interface HomeScreenProps {
   groupInput: string;
   setGroupInput: (val: string) => void;
+  fullSchedule: Schedule | null;
+  setFullSchedule: React.Dispatch<React.SetStateAction<Schedule | null>>;
+  loadedGroup: string | null;
+  isLoading: boolean;
+  errorMessage: string | null;
+  setErrorMessage: (msg: string | null) => void;
+  loadSchedule: (forcedQuery?: string) => Promise<void>;
   selectedSubgroup: number;
   showOtherSubgroup: boolean;
-  proxyTemplate: string;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   groupInput,
   setGroupInput,
+  fullSchedule,
+  loadedGroup,
+  isLoading,
+  errorMessage,
+  setErrorMessage,
+  loadSchedule,
   selectedSubgroup,
-  showOtherSubgroup,
-  proxyTemplate
+  showOtherSubgroup
 }) => {
-  const [schedule, setSchedule] = useState<Schedule | null>(null);
-  const [fullSchedule, setFullSchedule] = useState<Schedule | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [loadedGroup, setLoadedGroup] = useState<string | null>(null);
+  const schedule = useMemo(() => {
+    return fullSchedule ? filterScheduleBySubgroup(fullSchedule, selectedSubgroup) : null;
+  }, [fullSchedule, selectedSubgroup]);
 
   // Suggestions state
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -72,31 +78,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       ...StaffData.employees
     ].map(m => m.fullName);
     allStaffNames.current = Array.from(new Set(list)).sort();
-
-    // Load last successfully loaded schedule from LocalStorage
-    const lastQuery = localStorage.getItem('last_schedule_query');
-    const cachedData = localStorage.getItem('cached_schedule_data');
-    if (lastQuery && cachedData) {
-      try {
-        const parsed = JSON.parse(cachedData) as Schedule;
-        setFullSchedule(parsed);
-        setLoadedGroup(lastQuery);
-        setGroupInput(lastQuery);
-      } catch (e) {
-        console.error('Failed to parse cached schedule', e);
-      }
-    }
   }, []);
-
-  // Update filtered schedule when full schedule or subgroup selection changes
-  useEffect(() => {
-    if (fullSchedule) {
-      const filtered = filterScheduleBySubgroup(fullSchedule, selectedSubgroup);
-      setSchedule(filtered);
-    } else {
-      setSchedule(null);
-    }
-  }, [fullSchedule, selectedSubgroup]);
 
   // Handle auto-suggestions on input change
   useEffect(() => {
@@ -112,46 +94,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       setShowSuggestions(false);
     }
   }, [groupInput]);
-
-  const loadSchedule = async (forcedQuery?: string) => {
-    const query = (forcedQuery || groupInput).trim();
-    if (!query) return;
-
-    setIsLoading(true);
-    setErrorMessage(null);
-    setShowSuggestions(false);
-
-    try {
-      const parser = new ScheduleParser();
-      let rawHtml = '';
-      let parsedSchedule: Schedule;
-
-      // Check if it's a teacher search or group (if query doesn't contain digits, treat as teacher)
-      const isTeacher = !/\d/.test(query);
-
-      if (isTeacher) {
-        rawHtml = await fetchTeacherScheduleHtml(query, proxyTemplate);
-        parsedSchedule = parser.parseTeacherSchedule(rawHtml, query);
-      } else {
-        rawHtml = await fetchScheduleHtml(query, proxyTemplate);
-        parsedSchedule = parser.parse(rawHtml, query);
-      }
-
-      setFullSchedule(parsedSchedule);
-      setLoadedGroup(query);
-      setGroupInput(query);
-      setErrorMessage(null);
-
-      // Save to localStorage
-      localStorage.setItem('last_schedule_query', query);
-      localStorage.setItem('cached_schedule_data', JSON.stringify(parsedSchedule));
-    } catch (err: any) {
-      console.error(err);
-      setErrorMessage(err.message || 'Произошла непредвиденная ошибка');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleLessonCLick = (dayDate: string, lesson: Lesson) => {
     const originalDay = fullSchedule?.days.find(d => d.dayDate === dayDate);
@@ -204,7 +146,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               placeholder="Группа или фамилия"
               value={groupInput}
               onChange={(e) => setGroupInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && loadSchedule()}
+              onKeyDown={(e) => e.key === 'Enter' && loadSchedule(groupInput)}
               disabled={isLoading}
             />
             {groupInput && (
@@ -236,9 +178,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         <button
-          className="search-submit-btn"
-          onClick={() => loadSchedule()}
+          className={`search-submit-btn ${isLoading ? 'is-loading' : ''}`}
+          onClick={() => loadSchedule(groupInput)}
           disabled={isLoading || !groupInput.trim()}
+          title={isLoading ? 'Обновление расписания...' : groupInput === loadedGroup ? 'Обновить расписание' : 'Найти'}
         >
           {isLoading ? (
             <div className="spinner" />

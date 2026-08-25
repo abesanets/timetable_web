@@ -2,23 +2,13 @@ import React, { useState } from 'react';
 import { StaffData } from '../../data/staffData';
 import type { StaffMember } from '../../data/staffData';
 import { Search, ChevronRight, BookOpen, GraduationCap, Briefcase } from 'lucide-react';
+import { toShortName } from '../../utils/staffUtils';
 import { useClosingModal } from '../../hooks/useClosingModal';
 import './StaffScreen.css';
 
 interface StaffScreenProps {
   onViewSchedule: (teacherShortName: string) => void;
 }
-
-export const toShortName = (fullName: string): string => {
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length < 3) return fullName;
-  
-  const lastName = parts[0];
-  const firstName = parts[1];
-  const middleName = parts[2];
-  
-  return `${lastName} ${firstName.charAt(0)}. ${middleName.charAt(0)}.`;
-};
 
 export const StaffScreen: React.FC<StaffScreenProps> = ({ onViewSchedule }) => {
   const [searchQuery, setSearchQuery] = useState('');

@@ -219,7 +219,7 @@ function parseSubgroups(subject: string, room: string): Subgroup[] {
       const sPart = (subjectParts[i] || '').trim();
       const rPart = (roomParts[i] || '').trim();
       
-      let num: number | null = null;
+      let num: number;
       if (subjectMatches[i]) {
         num = parseInt(subjectMatches[i][1], 10);
       } else if (roomMatches[i]) {
