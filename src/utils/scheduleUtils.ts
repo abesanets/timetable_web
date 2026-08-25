@@ -1,5 +1,5 @@
-import type { Schedule, Lesson, Subgroup, DaySchedule } from '../data/models';
-import { WEEKDAY_SCHEDULE, SATURDAY_SCHEDULE } from '../data/models';
+import type { Schedule, Lesson, Subgroup, DaySchedule, BuildingId } from '../data/models';
+import { getCallSchedule } from './buildingUtils';
 
 export function isPhysicalEducation(subject: string): boolean {
   const s = subject.toLowerCase();
@@ -77,14 +77,12 @@ export function parseDate(dateStr: string): Date | null {
   return new Date(year, month, day);
 }
 
-export function areClassesFinishedForToday(day: DaySchedule): boolean {
+export function areClassesFinishedForToday(day: DaySchedule, building: BuildingId = 'kazintsa'): boolean {
   if (day.lessons.length === 0) return true;
 
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-  const isSaturday = now.getDay() === 6;
-  const schedule = isSaturday ? SATURDAY_SCHEDULE : WEEKDAY_SCHEDULE;
+  const schedule = getCallSchedule(building);
 
   // Find last lesson number
   let maxLessonNum = 0;
@@ -95,16 +93,17 @@ export function areClassesFinishedForToday(day: DaySchedule): boolean {
     }
   }
 
-  if (maxLessonNum < 1 || maxLessonNum > schedule.length) return true;
+  const lastCall = schedule.find(c => c.pairNumber === maxLessonNum);
+  if (!lastCall) return true;
 
-  const endTime = schedule[maxLessonNum - 1].secondEnd;
+  const endTime = lastCall.secondEnd || lastCall.firstEnd;
   const endParts = endTime.split(':');
   const endMinutes = parseInt(endParts[0], 10) * 60 + parseInt(endParts[1], 10);
 
   return currentMinutes >= (endMinutes + 5);
 }
 
-export function findTodayIndex(days: DaySchedule[]): number {
+export function findTodayIndex(days: DaySchedule[], building: BuildingId = 'kazintsa'): number {
   if (days.length === 0) return -1;
 
   const now = new Date();
@@ -118,7 +117,7 @@ export function findTodayIndex(days: DaySchedule[]): number {
 
   if (todayIndex >= 0) {
     const todaySchedule = days[todayIndex];
-    if (areClassesFinishedForToday(todaySchedule)) {
+    if (areClassesFinishedForToday(todaySchedule, building)) {
       // Find next day in the list that has lessons
       for (let i = todayIndex + 1; i < days.length; i++) {
         if (days[i].lessons.length > 0) {

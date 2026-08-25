@@ -404,10 +404,30 @@
   width: 100%;
 }
 
+.lesson-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .lesson-details-sheet h3 {
   font-size: 20px;
   font-weight: 700;
   color: var(--on-surface);
+}
+
+.lesson-call-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+  padding: 6px 12px;
+  border-radius: var(--shape-xl);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .details-scroll-content {

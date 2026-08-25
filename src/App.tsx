@@ -6,6 +6,7 @@ import { AlarmsScreen } from './features/alarms/AlarmsScreen';
 import { StaffScreen } from './features/staff/StaffScreen';
 import { SettingsScreen } from './features/settings/SettingsScreen';
 import { updateFavicon, hexToHsl } from './utils/favicon';
+import { getBuildingForGroup } from './utils/buildingUtils';
 
 export const App: React.FC = () => {
   // Load settings from localStorage
@@ -151,7 +152,7 @@ export const App: React.FC = () => {
           />
         );
       case 'alarms':
-        return <AlarmsScreen />;
+        return <AlarmsScreen initialBuilding={getBuildingForGroup(groupInput)} />;
       case 'staff':
         return <StaffScreen onViewSchedule={handleViewScheduleFromStaff} />;
       case 'settings':

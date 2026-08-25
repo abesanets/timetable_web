@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, RefreshCw, X, AlertTriangle, Info, MapPin, User, ChevronLeft } from 'lucide-react';
+import { Search, RefreshCw, X, AlertTriangle, Info, MapPin, User, ChevronLeft, Clock } from 'lucide-react';
 import type { Schedule, Lesson } from '../../data/models';
 import { StaffData } from '../../data/staffData';
 import type { StaffMember } from '../../data/staffData';
@@ -8,6 +8,7 @@ import { ScheduleParser } from '../../utils/parser';
 import { toShortName } from '../staff/StaffScreen';
 import { findStaffByShortName, getRoomDescription } from '../../utils/staffUtils';
 import { filterScheduleBySubgroup, shouldShowAllSubgroupsInDetails, findTodayIndex, isShowingNextDay, extractDate, parseDate } from '../../utils/scheduleUtils';
+import { getBuildingForGroup, getCallTime, formatCallTimeInterval } from '../../utils/buildingUtils';
 import { useClosingModal } from '../../hooks/useClosingModal';
 import './HomeScreen.css';
 
@@ -182,9 +183,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     return null;
   };
 
+  // Building of the currently searched group
+  const activeBuilding = getBuildingForGroup(groupInput || loadedGroup || '');
+
   // Find today/next index
-  const todayIndex = schedule ? findTodayIndex(schedule.days) : -1;
+  const todayIndex = schedule ? findTodayIndex(schedule.days, activeBuilding) : -1;
   const showingNext = schedule ? isShowingNextDay(schedule.days, todayIndex) : false;
+  const activeCallTime = selectedLesson ? getCallTime(selectedLesson.lessonNumber, activeBuilding) : undefined;
 
   return (
     <div className="home-screen scrollable-content">
@@ -303,7 +308,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         } else {
                           statusLabel = 'Следующий';
                         }
-                      } catch (e) {
+                      } catch {
                         statusLabel = 'Следующий';
                       }
                     }
@@ -397,7 +402,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className={`modal-content ${closingBottomSheet ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             {sheetMode === 'lesson' && selectedLesson && (
               <div className="lesson-details-sheet">
-                <h3>Детали занятия</h3>
+                <div className="lesson-sheet-header">
+                  <h3>Детали занятия</h3>
+                  {activeCallTime && (
+                    <div className="lesson-call-pill">
+                      <Clock size={14} />
+                      <span>{activeCallTime.pairNumber}-я пара: {formatCallTimeInterval(activeCallTime)}</span>
+                    </div>
+                  )}
+                </div>
                 <div className="details-scroll-content">
                   {selectedLesson.subgroups.map((subgroup, idx) => {
                     const parsedTeacher = getTeacherFromSubject(subgroup.subject);

@@ -209,14 +209,9 @@ function parseSubgroups(subject: string, room: string): Subgroup[] {
 
   if (subjectMatches.length > 0) {
     const subjectParts = splitBySubgroupMarkers(subject, subjectMatches);
-    let roomParts: string[] = [];
-
-    if (roomMatches.length > 0) {
-      roomParts = splitBySubgroupMarkers(room, roomMatches);
-    } else {
-      const foundRooms = splitRoomsByDelimiters(room, Math.max(subjectParts.length, 2));
-      roomParts = foundRooms;
-    }
+    const roomParts = roomMatches.length > 0
+      ? splitBySubgroupMarkers(room, roomMatches)
+      : splitRoomsByDelimiters(room, Math.max(subjectParts.length, 2));
 
     const totalSubgroups = Math.max(subjectParts.length, roomParts.length, 2);
 
@@ -224,7 +219,7 @@ function parseSubgroups(subject: string, room: string): Subgroup[] {
       const sPart = (subjectParts[i] || '').trim();
       const rPart = (roomParts[i] || '').trim();
       
-      let num = null;
+      let num: number | null = null;
       if (subjectMatches[i]) {
         num = parseInt(subjectMatches[i][1], 10);
       } else if (roomMatches[i]) {
@@ -274,11 +269,10 @@ function parseSubgroups(subject: string, room: string): Subgroup[] {
   }
 }
 
-function parseLessonRow(row: Element, daysSchedule: DaySchedule[], lessonNumber: string) {
-  const cells = Array.from(row.querySelectorAll('td'));
-  if (cells.length === 0) return;
+function parseLessonRow(dataCells: Element[], daysSchedule: DaySchedule[], lessonNumber: string) {
+  if (dataCells.length === 0) return;
 
-  const expandedCells = expandRow(cells);
+  const expandedCells = expandRow(dataCells);
   let dayIndex = 0;
   let cellIndex = 0;
 
@@ -341,7 +335,23 @@ export class ScheduleParser {
 
       const dataStartIndex = 2;
       for (let i = dataStartIndex; i < rows.length; i++) {
-        parseLessonRow(rows[i], daysSchedule, (i - dataStartIndex + 1).toString());
+        const row = rows[i];
+        const allCells = Array.from(row.children);
+        if (allCells.length === 0) continue;
+
+        let lessonNumber = (i - dataStartIndex + 1).toString();
+        let dataCells: Element[];
+
+        const firstText = (allCells[0].textContent || '').replace(/\u00a0/g, ' ').trim();
+        const numMatch = firstText.match(/\d+/);
+        if (numMatch) {
+          lessonNumber = numMatch[0];
+          dataCells = allCells.slice(1);
+        } else {
+          dataCells = Array.from(row.querySelectorAll('td'));
+        }
+
+        parseLessonRow(dataCells, daysSchedule, lessonNumber);
       }
 
       allDaysSchedule.push(...daysSchedule);
@@ -389,11 +399,22 @@ export class ScheduleParser {
 
     for (let i = 2; i < rows.length; i++) {
       const row = rows[i];
-      const firstCell = row.querySelector('th, td:first-child');
-      const lessonNumber = firstCell ? (firstCell.textContent || '').trim() : (i - 1).toString();
-      
-      const cells = Array.from(row.querySelectorAll('td'));
-      const expandedCells = expandRow(cells);
+      const allCells = Array.from(row.children);
+      if (allCells.length === 0) continue;
+
+      let lessonNumber = (i - 1).toString();
+      let dataCells: Element[];
+
+      const firstText = (allCells[0].textContent || '').replace(/\u00a0/g, ' ').trim();
+      const numMatch = firstText.match(/\d+/);
+      if (numMatch) {
+        lessonNumber = numMatch[0];
+        dataCells = allCells.slice(1);
+      } else {
+        dataCells = Array.from(row.querySelectorAll('td'));
+      }
+
+      const expandedCells = expandRow(dataCells);
 
       let dayIndex = 0;
       let cellIndex = 0;

@@ -11,7 +11,7 @@
   font-weight: 500;
 }
 
-.day-selector-pills {
+.building-selector-pills {
   display: flex;
   gap: 12px;
   padding: 16px;
@@ -21,7 +21,10 @@
 }
 
 .pill-btn {
-  padding: 10px 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
   border-radius: var(--shape-xl);
   border: 1px solid var(--outline-variant);
   background-color: var(--surface-container-low);
@@ -44,10 +47,39 @@
 }
 
 .calls-list {
-  padding: 0 16px 24px;
+  padding: 0 16px 32px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.shift-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+.shift-header--second {
+  margin-top: 18px;
+}
+
+.shift-badge {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--shape-m);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.shift-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
 }
 
 .call-item-card {
@@ -65,8 +97,8 @@
 }
 
 .lesson-number-circle {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background-color: var(--secondary-container);
   color: var(--on-secondary-container);
@@ -97,6 +129,11 @@
   gap: 2px;
 }
 
+.time-capsule--solid {
+  background-color: var(--surface-container-highest);
+  border: 1px solid var(--outline-variant);
+}
+
 .time-capsule span {
   font-size: 10px;
   font-weight: 600;
@@ -109,4 +146,70 @@
   font-size: 14px;
   color: var(--on-surface);
   font-weight: 600;
+}
+
+/* Groups of this building info section */
+.building-groups-card {
+  margin-top: 16px;
+  background-color: var(--surface-container-low);
+  border-radius: var(--shape-l);
+  border: 1px dashed var(--outline-variant);
+  overflow: hidden;
+}
+
+.building-groups-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  color: var(--on-surface);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.building-groups-toggle:hover {
+  background-color: var(--surface-container);
+}
+
+.toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary);
+}
+
+.toggle-state {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.building-groups-content {
+  padding: 4px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--outline-variant);
+  font-size: 13px;
+}
+
+.group-course-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.course-name {
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.course-groups {
+  color: var(--on-surface-variant);
+  line-height: 1.4;
 }
