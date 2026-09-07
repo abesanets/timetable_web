@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { BuildingId } from '../../data/models';
+import type { BuildingId, CallTime } from '../../data/models';
 import { BUILDINGS, getCallSchedule, KAZINTSA_GROUPS, KNORINA_GROUPS } from '../../utils/buildingUtils';
 import { Building2, Users } from 'lucide-react';
 import './AlarmsScreen.css';
@@ -38,6 +38,31 @@ export const AlarmsScreen: React.FC<AlarmsScreenProps> = ({ initialBuilding }) =
     { year: '4 курс', groups: '79ТЭ, 167ТП, 168МНЭ' }
   ];
 
+  const renderCallItem = (callTime: CallTime) => (
+    <div key={callTime.pairNumber} className="call-item-card">
+      <div className="lesson-number-circle">{callTime.pairNumber}</div>
+      <div className="time-slots">
+        {callTime.isSolid ? (
+          <div className="time-capsule time-capsule--solid">
+            <span>Время пары</span>
+            <strong>{callTime.firstStart} – {callTime.firstEnd}</strong>
+          </div>
+        ) : (
+          <>
+            <div className="time-capsule">
+              <span>1-я половина</span>
+              <strong>{callTime.firstStart} – {callTime.firstEnd}</strong>
+            </div>
+            <div className="time-capsule">
+              <span>2-я половина</span>
+              <strong>{callTime.secondStart} – {callTime.secondEnd}</strong>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="alarms-screen scrollable-content">
       <div className="screen-header">
@@ -69,67 +94,16 @@ export const AlarmsScreen: React.FC<AlarmsScreenProps> = ({ initialBuilding }) =
               <span className="shift-badge">1 смена</span>
               <span className="shift-title">1 – 3 пары</span>
             </div>
-            {shift1Calls.map((callTime) => (
-              <div key={callTime.pairNumber} className="call-item-card">
-                <div className="lesson-number-circle">{callTime.pairNumber}</div>
-                <div className="time-slots">
-                  <div className="time-capsule">
-                    <span>1-я половина</span>
-                    <strong>{callTime.firstStart} – {callTime.firstEnd}</strong>
-                  </div>
-                  <div className="time-capsule">
-                    <span>2-я половина</span>
-                    <strong>{callTime.secondStart} – {callTime.secondEnd}</strong>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {shift1Calls.map(renderCallItem)}
 
             <div className="shift-header shift-header--second">
               <span className="shift-badge">2 смена</span>
               <span className="shift-title">4 – 7 пары</span>
             </div>
-            {shift2Calls.map((callTime) => (
-              <div key={callTime.pairNumber} className="call-item-card">
-                <div className="lesson-number-circle">{callTime.pairNumber}</div>
-                <div className="time-slots">
-                  {callTime.isSolid ? (
-                    <div className="time-capsule time-capsule--solid">
-                      <span>Время пары</span>
-                      <strong>{callTime.firstStart} – {callTime.firstEnd}</strong>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="time-capsule">
-                        <span>1-я половина</span>
-                        <strong>{callTime.firstStart} – {callTime.firstEnd}</strong>
-                      </div>
-                      <div className="time-capsule">
-                        <span>2-я половина</span>
-                        <strong>{callTime.secondStart} – {callTime.secondEnd}</strong>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+            {shift2Calls.map(renderCallItem)}
           </>
         ) : (
-          schedule.map((callTime) => (
-            <div key={callTime.pairNumber} className="call-item-card">
-              <div className="lesson-number-circle">{callTime.pairNumber}</div>
-              <div className="time-slots">
-                <div className="time-capsule">
-                  <span>1-я половина</span>
-                  <strong>{callTime.firstStart} – {callTime.firstEnd}</strong>
-                </div>
-                <div className="time-capsule">
-                  <span>2-я половина</span>
-                  <strong>{callTime.secondStart} – {callTime.secondEnd}</strong>
-                </div>
-              </div>
-            </div>
-          ))
+          schedule.map(renderCallItem)
         )}
 
         {/* Groups of this building info section */}
